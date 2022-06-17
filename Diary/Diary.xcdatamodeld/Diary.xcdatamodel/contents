@@ -1,6 +1,12 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="20086" systemVersion="21F79" minimumToolsVersion="Automatic" sourceLanguage="Swift" userDefinedModelVersionIdentifier="">
+<model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="19461" systemVersion="21D62" minimumToolsVersion="Automatic" sourceLanguage="Swift" userDefinedModelVersionIdentifier="">
     <entity name="DiaryEntity" representedClassName="DiaryEntity" syncable="YES">
+        <attribute name="body" attributeType="String"/>
+        <attribute name="createdAt" attributeType="String"/>
+        <attribute name="title" attributeType="String"/>
+        <attribute name="uuid" attributeType="UUID" usesScalarValueType="NO"/>
+    </entity>
+    <entity name="TestEntity" representedClassName="TestEntity" syncable="YES">
         <attribute name="body" attributeType="String"/>
         <attribute name="createdAt" attributeType="String"/>
         <attribute name="title" attributeType="String"/>
@@ -8,5 +14,6 @@
     </entity>
     <elements>
         <element name="DiaryEntity" positionX="-54" positionY="-9" width="128" height="89"/>
+        <element name="TestEntity" positionX="-27" positionY="45" width="128" height="89"/>
     </elements>
 </model>

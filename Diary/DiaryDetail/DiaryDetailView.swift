@@ -39,10 +39,18 @@ final class DiaryDetailView: UIView {
     private func configureLayout() {
         self.addSubview(diaryTextView)
           
-        let leadingConstraint = diaryTextView.leadingAnchor.constraint(equalTo: self.safeAreaLayoutGuide.leadingAnchor)
-        let topConstraint = diaryTextView.topAnchor.constraint(equalTo: self.safeAreaLayoutGuide.topAnchor)
-        let trailingConstraint = diaryTextView.trailingAnchor.constraint(equalTo: self.safeAreaLayoutGuide.trailingAnchor)
-        let bottomConstraint = diaryTextView.bottomAnchor.constraint(equalTo: self.safeAreaLayoutGuide.bottomAnchor)
+        let leadingConstraint = diaryTextView
+            .leadingAnchor
+            .constraint(equalTo: self.safeAreaLayoutGuide.leadingAnchor)
+        let topConstraint = diaryTextView
+            .topAnchor
+            .constraint(equalTo: self.safeAreaLayoutGuide.topAnchor)
+        let trailingConstraint = diaryTextView
+            .trailingAnchor
+            .constraint(equalTo: self.safeAreaLayoutGuide.trailingAnchor)
+        let bottomConstraint = diaryTextView
+            .bottomAnchor
+            .constraint(equalTo: self.safeAreaLayoutGuide.bottomAnchor)
           
         NSLayoutConstraint.activate([
             leadingConstraint,

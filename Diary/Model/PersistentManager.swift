@@ -8,14 +8,17 @@
 import Foundation
 import CoreData
 
-final class PersistentManager {
-    let entityName: String
+protocol PersistentManager {
+    var entityName: String { get }
+    associatedtype Entity: NSManagedObject
     
-    init(entityName: String) {
-        self.entityName = entityName
-    }
+//    init(entityName: String) {
+//        self.entityName = entityName
+//    }
     
-    private let persistentContainer: NSPersistentContainer = {
+}
+extension PersistentManager {
+    private var persistentContainer: NSPersistentContainer {
         let container = NSPersistentContainer(name: "Diary")
         container.loadPersistentStores { _, error in
             if let error = error {
@@ -24,26 +27,34 @@ final class PersistentManager {
         }
         
         return container
-    }()
+    }
     
     private var mainContext: NSManagedObjectContext {
         return persistentContainer.viewContext
     }
     
-    private func getEntity(id: UUID) -> DiaryEntity? {
-        let request = DiaryEntity.fetchRequest()
+    private func getEntity(id: UUID) -> NSManagedObject? {
+        let request = Entity.fetchRequest()
         let predicate = NSPredicate(format: "id == %@", id as CVarArg)
         request.predicate = predicate
-        
-        return try? mainContext.fetch(request).first
+        guard let fetchRequest = try? mainContext.fetch(request).first else { return nil }
+        guard let nsFetchRequest = (fetchRequest as? NSFetchRequest<NSManagedObject>) else { return nil }
+        //return try? mainContext.fetch(request)
+        guard let managedObject = try? fetch(request: nsFetchRequest) else { return nil }
+        return managedObject.first
     }
     
-    func fetch() throws -> [Diary] {
-        let request = DiaryEntity.fetchRequest()
-        
-        return try self.mainContext.fetch(request).map {
-            Diary(title: $0.title, body: $0.body, createdAt: $0.createdAt, uuid: $0.uuid)
-        }
+//    func fetch() throws -> [Diary] {
+//        let request = DiaryEntity.fetchRequest()
+//
+//        return try self.mainContext.fetch(request).map {
+//            Diary(title: $0.title, body: $0.body, createdAt: $0.createdAt, uuid: $0.uuid)
+//        }
+//    }
+    
+    func fetch<T: NSManagedObject>(request: NSFetchRequest<T>) throws -> [T] {
+        let fatchResult = try self.mainContext.fetch(request)
+        return fatchResult
     }
     
     func register(_ item: Diary) throws {

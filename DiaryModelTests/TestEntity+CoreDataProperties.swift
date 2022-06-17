@@ -1,5 +1,5 @@
 //
-//  DiaryEntity+CoreDataProperties.swift
+//  TestEntity+CoreDataProperties.swift
 //  Diary
 //
 //  Created by 이시원 on 2022/06/17.
@@ -10,10 +10,10 @@ import Foundation
 import CoreData
 
 
-extension DiaryEntity {
+extension TestEntity {
 
-    @nonobjc public class func fetchRequest() -> NSFetchRequest<DiaryEntity> {
-        return NSFetchRequest<DiaryEntity>(entityName: "DiaryEntity")
+    @nonobjc public class func fetchRequest() -> NSFetchRequest<TestEntity> {
+        return NSFetchRequest<TestEntity>(entityName: "TestEntity")
     }
 
     @NSManaged public var body: String
@@ -23,6 +23,6 @@ extension DiaryEntity {
 
 }
 
-extension DiaryEntity : Identifiable {
+extension TestEntity : Identifiable {
 
 }
