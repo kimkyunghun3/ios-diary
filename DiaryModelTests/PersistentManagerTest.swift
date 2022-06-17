@@ -9,7 +9,7 @@ import XCTest
 import CoreData
 @testable import Diary
 
-class TestPersistentManager: PersistentManager {
+class TestPersistentManager: PersistentManager {    
     var persistentContainer: NSPersistentContainer = {
         let container = NSPersistentContainer(name: "Diary")
         container.loadPersistentStores { _, error in
@@ -33,7 +33,7 @@ class PersistentManagerTest: XCTestCase {
     }
 
     override func tearDownWithError() throws {
-        sut = nil
+        try sut.allDelete()
     }
     
     func test_register() {
@@ -57,38 +57,24 @@ class PersistentManagerTest: XCTestCase {
                 Diary(title: $0.title, body: $0.body, createdAt: $0.createdAt, uuid: $0.uuid)
                 
             })
+            print(item)
+            print(result)
             XCTAssertEqual(item.uuid, result!.uuid)
         } catch {
             XCTFail("불러오기 실패")
         }
     }
     
-    func test_delete() {
-        do {
-            try sut.allDelete()
-        } catch {
-            XCTFail("삭제 실패")
-        }
-        
+    func test_delete() {        
         let item = Diary(title: "test", body: "test", createdAt: "2022년 1월 1일")
-        do {
-            try sut.register(item)
-            print("111")
-        } catch {
-            XCTFail("저장 실패")
-        }
-        
-        do {
-            try sut.delete(item)
-        } catch {
-            XCTFail("삭제 실패")
-        }
+        try! sut.register(item)
+        try! sut.delete(item)
         
         do {
             let reuslt =  try sut.fetch(request: TestEntity.fetchRequest())
             XCTAssertEqual(reuslt, [])
         } catch {
-            
+            XCTFail()
         }
     }
 }

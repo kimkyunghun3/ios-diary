@@ -22,22 +22,14 @@ extension PersistentManager {
     
     private func getEntity(id: String) -> NSManagedObject? {
         let request = Entity.fetchRequest()
-        let predicate = NSPredicate(format: "%K == %@", id)
+        let predicate = NSPredicate(format: "uuid == %@", id)
         request.predicate = predicate
         
         guard let fetchRequest = try? mainContext.fetch(request).first else {
             return nil
-            
+
         }
-        guard let nsFetchRequest = (fetchRequest as? NSFetchRequest<NSManagedObject>) else {
-            return nil
-            
-        }
-        guard let managedObject = try? fetch(request: nsFetchRequest) else {
-            return nil
-            
-        }
-        return managedObject.first
+        return fetchRequest as? NSManagedObject
     }
     
     func fetch<T: NSManagedObject>(request: NSFetchRequest<T>) throws -> [T] {
