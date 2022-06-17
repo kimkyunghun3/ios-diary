@@ -19,7 +19,7 @@ extension TestEntity {
     @NSManaged public var body: String
     @NSManaged public var createdAt: String
     @NSManaged public var title: String
-    @NSManaged public var uuid: UUID
+    @NSManaged public var uuid: String
 
 }
 

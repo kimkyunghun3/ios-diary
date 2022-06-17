@@ -4,13 +4,13 @@
         <attribute name="body" attributeType="String"/>
         <attribute name="createdAt" attributeType="String"/>
         <attribute name="title" attributeType="String"/>
-        <attribute name="uuid" attributeType="UUID" usesScalarValueType="NO"/>
+        <attribute name="uuid" attributeType="String"/>
     </entity>
     <entity name="TestEntity" representedClassName="TestEntity" syncable="YES">
         <attribute name="body" attributeType="String"/>
         <attribute name="createdAt" attributeType="String"/>
         <attribute name="title" attributeType="String"/>
-        <attribute name="uuid" attributeType="UUID" usesScalarValueType="NO"/>
+        <attribute name="uuid" attributeType="String"/>
     </entity>
     <elements>
         <element name="DiaryEntity" positionX="-54" positionY="-9" width="128" height="89"/>

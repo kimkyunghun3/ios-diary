@@ -6,9 +6,21 @@
 //
 
 import XCTest
+import CoreData
 @testable import Diary
 
 class TestPersistentManager: PersistentManager {
+    var persistentContainer: NSPersistentContainer = {
+        let container = NSPersistentContainer(name: "Diary")
+        container.loadPersistentStores { _, error in
+            if let error = error {
+                fatalError("Unable to load \(error)")
+            }
+        }
+        
+        return container
+    }()
+    
     var entityName: String = "TestEntity"
     
     typealias Entity = TestEntity
@@ -25,19 +37,58 @@ class PersistentManagerTest: XCTestCase {
     }
     
     func test_register() {
+        do {
+            try sut.allDelete()
+        } catch {
+            XCTFail("삭제 실패")
+        }
+        
         let item = Diary(title: "test", body: "test", createdAt: "2022년 1월 1일")
         do {
             try sut.register(item)
+            print("111")
         } catch {
-            print("sss")
+            XCTFail("저장 실패")
         }
         
         do {
             let request = TestEntity.fetchRequest()
-            let result = try sut.fetch(request: request).first
-            XCTAssertEqual(item.title, result!.title)
+            let result = try sut.fetch(request: request).first.map({
+                Diary(title: $0.title, body: $0.body, createdAt: $0.createdAt, uuid: $0.uuid)
+                
+            })
+            XCTAssertEqual(item.uuid, result!.uuid)
+        } catch {
+            XCTFail("불러오기 실패")
+        }
+    }
+    
+    func test_delete() {
+        do {
+            try sut.allDelete()
+        } catch {
+            XCTFail("삭제 실패")
+        }
+        
+        let item = Diary(title: "test", body: "test", createdAt: "2022년 1월 1일")
+        do {
+            try sut.register(item)
+            print("111")
         } catch {
             XCTFail("저장 실패")
+        }
+        
+        do {
+            try sut.delete(item)
+        } catch {
+            XCTFail("삭제 실패")
+        }
+        
+        do {
+            let reuslt =  try sut.fetch(request: TestEntity.fetchRequest())
+            XCTAssertEqual(reuslt, [])
+        } catch {
+            
         }
     }
 }

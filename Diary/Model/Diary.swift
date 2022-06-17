@@ -11,14 +11,14 @@ struct Diary: Codable, Hashable {
     let title: String?
     let body: String?
     let createdAt: String?
-    let uuid: UUID
+    let uuid: String
 
     private enum CodingKeys: String, CodingKey {
         case title, body
         case createdAt = "created_at"
     }
     
-    init(title: String, body: String, createdAt: String, uuid: UUID = UUID()) {
+    init(title: String, body: String, createdAt: String, uuid: String = UUID().uuidString) {
         self.title = title
         self.body = body
         self.createdAt = createdAt
@@ -30,7 +30,7 @@ struct Diary: Codable, Hashable {
         self.title = try values.decode(String.self, forKey: .title)
         self.body = try values.decode(String.self, forKey: .body)
         self.createdAt = try values.decode(Int.self, forKey: .createdAt).time()
-        self.uuid = UUID()
+        self.uuid = UUID().uuidString
     }
 
     static func createData() -> [Diary]? {
