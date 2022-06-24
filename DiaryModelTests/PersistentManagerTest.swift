@@ -9,7 +9,9 @@ import XCTest
 import CoreData
 @testable import Diary
 
-class TestPersistentManager: PersistentManager {    
+class TestPersistentManager: PersistentManager {
+    typealias MapableModel = Diary
+    
     var persistentContainer: NSPersistentContainer = {
         let container = NSPersistentContainer(name: "Diary")
         container.loadPersistentStores { _, error in
@@ -21,7 +23,7 @@ class TestPersistentManager: PersistentManager {
         return container
     }()
     
-    var entityName: String = "TestEntity"
+    var entityName: String = "DiaryEntity"
     
     typealias Entity = TestEntity
 }
@@ -52,10 +54,10 @@ class PersistentManagerTest: XCTestCase {
         }
         
         do {
-            let request = TestEntity.fetchRequest()
+            let request = DiaryEntity.fetchRequest()
             let result = try sut.fetch(request: request).first.map({
                 Diary(title: $0.title, body: $0.body, createdAt: $0.createdAt, uuid: $0.uuid)
-                
+
             })
             print(item)
             print(result)
@@ -71,7 +73,7 @@ class PersistentManagerTest: XCTestCase {
         try! sut.delete(item)
         
         do {
-            let reuslt =  try sut.fetch(request: TestEntity.fetchRequest())
+            let reuslt =  try sut.fetch(request: DiaryEntity.fetchRequest())
             XCTAssertEqual(reuslt, [])
         } catch {
             XCTFail()

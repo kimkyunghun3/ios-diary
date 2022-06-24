@@ -6,8 +6,17 @@
 //
 
 import Foundation
+import CoreData
 
-struct Diary: Codable, Hashable {
+protocol Mapable {
+    associatedtype Entity: NSManagedObject
+    func setValue(managedObject: inout NSManagedObject)
+    var uuid: String { get }
+}
+
+struct Diary: Codable, Hashable, Mapable {
+    typealias Entity = DiaryEntity
+    
     let title: String?
     let body: String?
     let createdAt: String?
@@ -31,6 +40,13 @@ struct Diary: Codable, Hashable {
         self.body = try values.decode(String.self, forKey: .body)
         self.createdAt = try values.decode(Int.self, forKey: .createdAt).time()
         self.uuid = UUID().uuidString
+    }
+    
+    func setValue(managedObject: inout NSManagedObject) {
+        managedObject.setValue(self.title, forKey: "title")
+        managedObject.setValue(self.body, forKey: "body")
+        managedObject.setValue(self.createdAt, forKey: "createdAt")
+        managedObject.setValue(self.uuid, forKey: "uuid")
     }
 
     static func createData() -> [Diary]? {

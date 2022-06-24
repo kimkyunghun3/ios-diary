@@ -11,7 +11,7 @@ import CoreData
 protocol PersistentManager {
     var entityName: String { get }
     var persistentContainer: NSPersistentContainer { get }
-    associatedtype Entity: NSManagedObject
+    associatedtype MapableModel: Mapable
 
 }
 extension PersistentManager {
@@ -21,7 +21,7 @@ extension PersistentManager {
     }
     
     private func getEntity(id: String) -> NSManagedObject? {
-        let request = Entity.fetchRequest()
+        let request = MapableModel.Entity.fetchRequest()
         let predicate = NSPredicate(format: "uuid == %@", id)
         request.predicate = predicate
         
@@ -32,19 +32,16 @@ extension PersistentManager {
         return fetchRequest as? NSManagedObject
     }
     
-    func fetch<T: NSManagedObject>(request: NSFetchRequest<T>) throws -> [T] {
+    func fetch<T: NSManagedObject>(request: NSFetchRequest<T>) throws -> NSArray {
         let fatchResult = try self.mainContext.fetch(request)
-        return fatchResult
+        return fatchResult as NSArray
     }
     
-    func register(_ item: Diary) throws {
+    func register(_ item: MapableModel) throws {
         let entity = NSEntityDescription.entity(forEntityName: entityName, in: self.mainContext)
         if let entity = entity {
-            let managedObject = NSManagedObject(entity: entity, insertInto: self.mainContext)
-            managedObject.setValue(item.title, forKey: "title")
-            managedObject.setValue(item.body, forKey: "body")
-            managedObject.setValue(item.createdAt, forKey: "createdAt")
-            managedObject.setValue(item.uuid, forKey: "uuid")
+            var managedObject = NSManagedObject(entity: entity, insertInto: self.mainContext)
+            item.setValue(managedObject: &managedObject)
             
             try self.mainContext.save()
         }
@@ -61,17 +58,14 @@ extension PersistentManager {
     }
     
     func allDelete() throws {
-        let fatchResult = Entity.fetchRequest()
+        let fatchResult = MapableModel.Entity.fetchRequest()
         let delete = NSBatchDeleteRequest(fetchRequest: fatchResult)
         try self.mainContext.execute(delete)
     }
     
-    func update(_ item: Diary) throws {
-        let entity = getEntity(id: item.uuid)
-        entity?.setValue(item.title, forKey: "title")
-        entity?.setValue(item.body, forKey: "body")
-        entity?.setValue(item.createdAt, forKey: "createdAt")
-        entity?.setValue(item.uuid, forKey: "uuid")
+    func update(_ item: MapableModel) throws {
+        guard var entity = getEntity(id: item.uuid) else { return }
+        item.setValue(managedObject: &entity)
         
         try self.mainContext.save()
     }
