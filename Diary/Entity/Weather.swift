@@ -8,10 +8,10 @@
 import Foundation
 
 struct Weather: Codable {
-    let icon: [Icon]
+    let icons: [Icon]
     
     enum CodingKeys: String, CodingKey {
-        case icon = "weather"
+        case icons = "weather"
     }
 }
 

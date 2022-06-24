@@ -20,6 +20,34 @@ final class DiaryListViewController: UITableViewController {
         configureTableView()
         configureDataSource()
         configureNavigationItem()
+        xxx()
+        
+    }
+    func xxx() {
+        Task {
+            guard let urlRequst = WeatherAPI(parameters: ["lat": "35",
+                                                          "lon": "139",
+                                                          "appid": "35e629549016019976c1803c71e8fc16"])
+                    .makeURLRequest() else { return }
+
+            let data = try? await NetworkManager().fetchWeatherData(urlRequest: urlRequst)
+            print(data)
+            guard let icon = data?.icons.first?.icon else {
+                return
+
+            }
+            
+            guard let imageRequst = IconAPI(path: icon + ".png").makeURLRequest() else {
+                return
+                
+            }
+            do {
+                let iconImage = try await NetworkManager().fetchImageData(urlRequest: imageRequst)
+                print(iconImage)
+            } catch {
+                print("이미지 에러")
+            }
+        }
     }
     
     private func configureDataSource() {
