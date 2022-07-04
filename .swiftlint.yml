@@ -1,2 +1,3 @@
 disabled_rules:
 - comment_spacing
+- trailing_whitespace

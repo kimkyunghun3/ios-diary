@@ -5,8 +5,9 @@
         <attribute name="createdAt" attributeType="Date" usesScalarValueType="NO"/>
         <attribute name="title" attributeType="String"/>
         <attribute name="uuid" attributeType="UUID" usesScalarValueType="NO"/>
+        <attribute name="weatherIcon" optional="YES" attributeType="String"/>
     </entity>
     <elements>
-        <element name="DiaryEntity" positionX="-54" positionY="-9" width="128" height="89"/>
+        <element name="DiaryEntity" positionX="-54" positionY="-9" width="128" height="104"/>
     </elements>
 </model>
