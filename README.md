@@ -11,11 +11,19 @@
 
 ## 📺 프로젝트 실행화면
 
+|메인 화면| 일기장 등록 | 일기장 수정 | 
+|:---:|:---:|:---:|
+|<img src = "https://i.imgur.com/qdaefzN.gif" width="200">|<img src = "https://i.imgur.com/56QtqvH.gif" width="200" >|<img src = "https://i.imgur.com/9YqW96N.gif" width="200" >|
+
+| 일기장 삭제 | 일기장 공유
+|:---:|:---:|
+|<img src = "https://i.imgur.com/qdPMKXj.gif" width="200">|<img src = "https://i.imgur.com/XGHdQr7.gif" width="200">|
+
 
 ## 👀 PR
 - [STEP 1](https://github.com/yagom-academy/ios-open-market/pull/136)
 - [STEP 2](https://github.com/yagom-academy/ios-diary/pull/16)
-
+- [STEP 3](https://github.com/yagom-academy/ios-diary/pull/25)
 
 ## 🛠 개발환경 및 라이브러리
 - [![swift](https://img.shields.io/badge/swift-5.0-orange)]()
@@ -32,6 +40,9 @@
 - CoreData
 - Builder Pattern
 - UIActivityViewController
+- CllocationManager
+- Open API
+- async await
 
 ## ✨ 구현내용
 - UITableViewDiffableDataSource 이용한 TableView 구현
@@ -43,6 +54,8 @@
 - Builder Pattern를 활용한 UIAlertController, UISwipeActionsConfiguration 구현
 - UIActivityViewController를 통한 Content 공유 기능 구현
 - 백그라운드 진입, 뒤로가기, 키보드가 Hidden 되었을 때 Content 자동 저장 기능 구현
+- CLLocationManagerDelegate 활용한 현재 위치의 위도, 경도 가져오도록 구현
+- async, await를 활용하여 네트워크 통신
 
 ## 🤔 해결한 방법 및 조언받고 싶은 부분
 
@@ -315,3 +328,139 @@ private func showShareController(_ diary: Diary) {
     self.present(activityViewController, animated: true)
 }
 ```
+
+## [STEP 3]
+
+### 네트워크 통신을 위한 추상 프로토콜 생성
+네트워크 통신에 필요한(url, path, httpMethod..등)을 관리하는 프로토콜을
+
+```swift
+protocol APIable {
+    var baseURL: String { get }
+    var path: String { get }
+    var method: HTTPMethod { get }
+    var parameters: [String: String]? { get }
+}
+```
+위와 같이 만들어 새로운 API가 필요했을 때 추가적인 프로토콜을 채택한 타입을 만들어, 확장성을 높힐 수 있었다.
+
+```swift
+struct IconAPI: APIable {
+    let baseURL: String = "https://openweathermap.org/img/w/"
+    let path: String
+    let method: HTTPMethod = .get
+    let parameters: [String: String]? = nil
+}
+```
+또한, 중복되는 코드는 프로토콜의 기본구현으로 구현하였습니다 다.
+
+### CLLocationManager가 위치정보을 읽어오는 시간
+실 기기에 앱을 다운받고 테스트를 해보는 과정에서 CLLocationManager가 위치 정보를 읽어오는데 너무 오래걸리는 이슈가 발생. 때문에 읽어오기 전에 데이터을 생성하면, 날씨 이미지가 입력되지 않았다. 때문에 
+
+```swift
+locationManager.desiredAccuracy = kCLLocationAccuracyKilometer
+```
+위와 같이 코드를 통해 CLLocationManager의 정확도를 낮춤으로써 좀더 빠르게 읽어올 수 있도록록 개선하였다.
+
+### async await 활용한 네트워크 통신
+일반적인 URLSession 통신을 하게 된다면 completion 부분이 복잡하여 코드가 많아질수록 읽기가 어려워져서 오류가 발생할 수 있다.
+
+그러므로 새로나온 기술인 `async` `await`를 통해 가독성을 높일 수 있으며 더 깔끔한 코드를 구현할 수 있었다.
+
+```swift
+func fetchWeatherData(urlRequest: URLRequest) async throws -> String? {
+    return try await Task { () -> String? in
+        guard let url = urlRequest.url else {
+            throw NetWorkError.url
+        }
+        let (data, response) = try await URLSession.shared.data(from: url)
+
+        guard let httpResponse = response as? HTTPURLResponse,
+              (200...300).contains(httpResponse.statusCode) else {
+                  throw NetWorkError.response
+              }
+
+        guard let data = try? JSONDecoder().decode(Weather.self, from: data) else {
+            throw NetWorkError.decode
+        }
+
+        return data.icons.first?.icon
+    }.value
+}
+
+```
+
+completionHandler가 사라지므로 가독성도 올라가고 더 깔끔한 코드를 볼 수 있다.
+
+
+### locationManager.requestWhenInUseAuthorization 중복 호출 문제
+`locationManager` 변수가 `lazy`로 선언되어 `requestWhenInUseAuthorization()` 메서드를 중복 호출해야하는 문제가 발생했다. 때문에 `lazy` 키워드를 지우고, init에서 `locationManager` 변수를 초기화하는 방법으로 코드를 개선하였다.
+
+위같은 문제가 발생했던, 이유는 `locationManager` 변수가 메모리에 올라기는 시점에 사용자에게 위치 정보를 읽어올지 물어보게 되는데 `lazy`로 선언되어 있어 사용되기전 까지 메모리에 올라가지 않아 `requestWhenInUseAuthorization()` 메서드가 중복 호출을 해야하는 일이 발생했다.
+
+```swift
+private let locationManager: CLLocationManager
+    
+init(diary: Diary? = nil) {
+    self.diary = diary
+        
+    self.locationManager = CLLocationManager()
+    self.locationManager.desiredAccuracy = kCLLocationAccuracyKilometer
+
+    super.init(nibName: nil, bundle: nil)
+}
+```
+
+위와 같이 변경하고, `viewDidLoad`에서 `requestWhenInUseAuthorization()` 호출 코드를 삭제하였습니다.
+
+### cell에 task를 가지고 있는 문제
+처음 구현 방식으로는 `Cell`에 `task`라는 프로퍼티를 가지고 있어서 `Cell` 내부에서 네트워크 통신을 통해 이미지뷰를 업데이트하는 방식으로 구현
+```swift
+var task: Task<UIImage, Error>?
+
+....
+
+private func setImageView(icon: String) async {
+    guard let urlRequest = IconAPI(path: icon + ".png").makeURLRequest() else { return }
+    self.task = NetworkManager().fetchImageData(urlRequest: urlRequest)
+    let image = try? await task?.value
+
+    DispatchQueue.main.async {
+        self.weatherImageView.image = image
+    }
+}
+```
+
+하지만 `cell`에 로직이 존재하므로 적절하지 않는 방법이라고 판단하여
+`cell`과 `ViewController` 사이에 `TaskManager`를 두고 중간 로직을 구현
+
+```swift
+final class TaskManager {
+    private var task: Task<UIImage, Error>?
+
+    func request(icon: String) async -> UIImage? {
+        guard let urlRequest = IconAPI(path: icon + ".png").makeURLRequest() else { return nil }
+        self.task = NetworkManager().fetchImageData(urlRequest: urlRequest)
+        
+        return try? await task?.value
+    }
+    
+    func cancel() {
+        task?.cancel()
+    }
+    
+}
+```
+
+Cell의 호출부는 아래와 같다.
+```swift
+private func setImageView(icon: String) async {
+    let image = await taskManager.request(icon: icon)
+    DispatchQueue.main.async {
+        self.weatherImageView.image = image
+    }
+}
+```
+
+이를 통해 Cell에 로직을 제거할 수 있었다.
+
